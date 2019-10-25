@@ -1,14 +1,12 @@
-//test something
 let deviceWidth = device.width;
 let deviceHeight = device.height;
-
 
 function openBeginningBtnItem(delay) {
     let items = textStartsWith("gif;base64").depth(19).find();
     console.log("寻找--领喵币");
     if (items.length > 0) {
         let item = items[items.length - 1];
-        console.log("点击-领喵币");
+        console.log("点击--领喵币");
         clickItemInCenter(item);
         sleep(delay);
         return 1;
@@ -43,6 +41,12 @@ function clickItemInCenter(item, time) {
 }
 
 function goShopping() {
+    let finished = textContains("20/20").findOne(1000);
+    if (finished) {
+        toastLog("结束--次数逛完");
+        return 0;
+    }
+
     let shopping = text("去进店").findOne(1000);
     if (shopping == null) {
         let finished = textContains("20/20").findOne(1000);
@@ -157,7 +161,7 @@ function runChoose(n) {
         let status = runGoShopping();
         alert("结束");
     } else {
-        alert("功能待完善，请先选择其他");
+        alert("功能待完善，请先选择其他(会不会完善那就看我心情了)");
     }
 }
 
