@@ -43,22 +43,11 @@ function clickItemInCenter(item, time) {
 }
 
 function goShopping() {
-    let finished = textContains("20/20").findOne(1000);
-    if (finished) {
-        toastLog("结束--次数逛完");
-        return 0;
-    }
-
-    let shopping = text("去进店").findOne(1000);
+    let shopping = text("去浏览").findOne(1000);
     if (shopping == null) {
-        let finished = textContains("20/20").findOne(1000);
-        if (finished) {
-            toastLog("结束--次数逛完");
-            return 0;
-        } else {
-            toastLog("结束--未知问题");
-            return -1;
-        }
+        toastLog("结束--未知问题");
+        return -1;
+
     }
     console.log("开始浏览...");
     clickItemInCenter(shopping);
@@ -75,7 +64,7 @@ function swipeUp() {
 
 function isFull() {
     for (let i = 0; i < 10; i++) {
-        if (descStartsWith("今日已达上限").findOnce() || textStartsWith("今日已达上限").findOnce()) {
+        if (descContains("已达上限").findOnce() || textContains("已达上限").findOnce()) {
             console.log("今日已达上限");
             return 0;
         }
@@ -90,7 +79,7 @@ function waitSwipe() {
     for (let i = 0; i < 3; i++) {
         swipeAppear = desc("滑动浏览得").findOne(1000);
         if (swipeAppear != null) break;
-        shoppingFull = desc("今日已达上限").findOne(1000);
+        shoppingFull = descContains("已达上限").findOne(1000);
         if (shoppingFull != null) return 0;
         console.log("i" + i);
     }
@@ -163,6 +152,19 @@ function judgeWay() {
     return -1;
 }
 
+function reopenAgain() {
+    let tbs = id("taskBottomSheet").findOnce();
+    if (tbs == null) return -1;
+    let close = tbs.child(1);
+    if (close != null) {
+        console.log("关闭");
+        clickItemInCenter(close);
+        sleep(1000);
+        return ensureOpenBeginning(1000);
+    }
+    return -1;
+}
+
 function runGoShopping() {
     let isSuccess;
 
@@ -170,7 +172,17 @@ function runGoShopping() {
         isSuccess = ensureOpenBeginning(1000);
         if (isSuccess !== 1) break;
         isSuccess = goShopping();
-        if (isSuccess !== 1) break;
+
+        let count = 0;
+        while (isSuccess !== 1) {
+            if (reopenAgain() === 1) {
+                isSuccess = 1;
+                break;
+            }
+            if (count++ >= 2) break;
+        }
+
+        if (isSuccess === -1) break;
 
         let st = waitSwipe();
         if (st === 0) {
@@ -206,11 +218,18 @@ function clickGoBrowse() {
 function runGoBrowse() {
     let isSuccess = 1;
 
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 40; i++) {
         isSuccess = ensureOpenBeginning(1000);
         if (isSuccess !== 1) break;
-        isSuccess = clickGoBrowse();
-        if (isSuccess !== 1) break;
+
+        for (let j = 0; j < 3; j++) {
+            isSuccess = clickGoBrowse();
+            if (isSuccess !== 1) {
+                reopenAgain();
+            } else break;
+        }
+
+        if (isSuccess === -1) break;
 
         let jw = judgeWay();
 
@@ -239,7 +258,6 @@ function runGoBrowse() {
 
         back();
         sleep(2000);
-
     }
 }
 
@@ -282,16 +300,32 @@ function warning(n) {
 }
 
 function runRun(n) {
-    if (n === 0) {
-        let status = runGoShopping();
-        toastLog("去逛店--浏览结束");
-        alert("结束");
-    } else {
-        let statue = runGoBrowse();
-        toastLog("去浏览--浏览结束");
-        status = runGoShopping();
-        toastLog("去逛店--浏览结束");
-        alert("结束");
+    sleep(500);
+
+    let statue = runGoBrowse();
+    toastLog("去浏览--浏览结束");
+    alert("结束");
+}
+
+function moveFloating(n) {
+    let i = -1;
+    dialogs.confirm("由于需要，请将悬浮窗移动至靠左。", "点击确认表示已完成，直接运行脚本。\n点击取消则手动前去调整。\n" +
+        "(中间浏览过程中可能会跳转到淘宝首页进行浏览，此时需要手动再次切回猫铺。)", function (clear) {
+        if (clear) {
+            console.log("直接运行");
+            i = 1;
+        } else {
+            toastLog("请将悬浮窗移动至靠左");
+            i = 0;
+        }
+    });
+
+
+    while (i === -1) {
+        slepp(100);
+    }
+    if (i === 1) {
+        runRun(n);
     }
 }
 
@@ -300,10 +334,8 @@ function runChoose(n) {
     if (currentVersion === 1) {
         warning(n);
     } else {
-        runRun(n);
+        moveFloating(n);
     }
-
-
 }
 
 module.exports = runChoose;
