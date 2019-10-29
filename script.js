@@ -66,10 +66,11 @@ function isFull() {
     for (let i = 0; i < 10; i++) {
         if (descContains("已达上限").findOnce() || textContains("已达上限").findOnce()) {
             console.log("今日已达上限");
-            return 0;
+            return 1;
         }
         sleep(1000);
     }
+    return 0
 }
 
 
@@ -153,6 +154,7 @@ function judgeWay() {
 }
 
 function reopenAgain() {
+    console.log("reopen");
     let tbs = id("taskBottomSheet").findOnce();
     if (tbs == null) return -1;
     let close = tbs.child(1);
@@ -208,6 +210,23 @@ function runGoShopping() {
 function clickGoBrowse() {
     let browse = text("去浏览").findOne(1000);
     if (browse != null) {
+        let guessYouLike = textContains("猜你喜欢").findOnce();
+        if (guessYouLike != null) {
+            console.log("出现猜你喜欢");
+            let pp = browse.parent.bounds().top;
+            let ppp = guessYouLike.parent.parent.bounds().top;
+            if (ppp === pp) {
+                console.log("跳过--猜你喜欢");
+                let allBrowse = text("去浏览").find();
+                for (let i = 0; i < allBrowse.length; i++) {
+                    let item = allBrowse[i];
+                    if (item.bounds().top !== browse.bounds().top) {
+                        browse = item;
+                    }
+                }
+            }
+        }
+
         console.log("点击--去浏览");
         clickItemInCenter(browse);
         return 1;
@@ -236,7 +255,7 @@ function runGoBrowse() {
         sleep(1000);
         if (jw === 0) swipeUp();
         else if (jw === -1) {
-            if (isFull()) {
+            if (isFull() === 1) {
                 console.log("已达上限");
                 back();
                 sleep(2000);
