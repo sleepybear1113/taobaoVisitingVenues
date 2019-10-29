@@ -240,6 +240,7 @@ function runGoBrowse() {
                 console.log("已达上限");
                 back();
                 sleep(2000);
+                reopenAgain();
                 continue;
             }
             console.log("4s");
