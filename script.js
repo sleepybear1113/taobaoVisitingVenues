@@ -213,8 +213,8 @@ function clickGoBrowse() {
         let guessYouLike = textContains("猜你喜欢").findOnce();
         if (guessYouLike != null) {
             console.log("出现猜你喜欢");
-            let pp = browse.parent.bounds().top;
-            let ppp = guessYouLike.parent.parent.bounds().top;
+            let pp = browse.parent().bounds().top;
+            let ppp = guessYouLike.parent().parent().bounds().top;
             if (ppp === pp) {
                 console.log("跳过--猜你喜欢");
                 let allBrowse = text("去浏览").find();
