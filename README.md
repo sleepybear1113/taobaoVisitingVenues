@@ -1,7 +1,7 @@
 # taobaoVisitingVenues
 
 ## 简介
-淘宝逛会场or店铺得喵币，基于 [auto.js pro]: https://pro.autojs.org/ 7.0 的无障碍服务，for Android 7.0+（auto 8.0 版本吧淘宝等 APP 屏蔽了）。
+用来双十一淘宝逛会场来获得喵币的自动化脚本，基于 [auto.js pro 7.0]: https://pro.autojs.org/ 的无障碍服务，for Android 7.0+（auto 8.0 版本吧淘宝等 APP 屏蔽了）。理解上和电脑版的按键精灵的区别不大。这里只提供刷猫币的脚本帮助大家远离繁琐的浏览操作（if 能）。
 
 ~~ 原来我就是随便写写的，看到竟然有 stars 才变慌来补的 ~~
 
