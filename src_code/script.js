@@ -1,5 +1,17 @@
+toastLog("开始");
+
 let deviceWidth = device.width;
 let deviceHeight = device.height;
+
+let isCheckIn = false;
+
+function clickItemInCenter(item, time) {
+    if (time == null) time = 50;
+    if (item == null) return;
+    let x = item.bounds().centerX();
+    let y = item.bounds().centerY();
+    press(x, y, time);
+}
 
 /**
  * 点击领喵币的按钮
@@ -60,12 +72,22 @@ function ensureOpenBeginning(waitDelay) {
     return -1;
 }
 
-function clickItemInCenter(item, time) {
-    if (time == null) time = 50;
-    if (item == null) return;
-    let x = item.bounds().centerX();
-    let y = item.bounds().centerY();
-    press(x, y, time);
+function checkIn(flag) {
+    console.log("判断店铺签到");
+    if (flag === true) {
+        let getMoney = desc("签到领喵币").findOne(500);
+        if (getMoney != null) {
+            clickItemInCenter(getMoney);
+            console.log("点击签到");
+            sleep(2000);
+
+            let happyToGet = desc("开心收下").findOnce();
+            clickItemInCenter(happyToGet);
+            console.log("店铺签到获得喵币");
+            sleep(500);
+        }
+    }
+
 }
 
 /**
@@ -102,9 +124,10 @@ function browseFinish() {
     for (let i = 0; i < 10; i++) {
         let normalFinishDesc = descContains("已获得").findOnce();
         let normalFinishText = textContains("已获得").findOnce();
-        let swipeFinish = desc("任务完成").findOnce();
+        let swipeFinishDesc = descContains("任务完成").findOnce();
+        let swipeFinishText = textContains("任务完成").findOnce();
 
-        if (normalFinishDesc != null || swipeFinish != null || normalFinishText != null) {
+        if (normalFinishDesc != null || swipeFinishDesc != null || normalFinishText != null || swipeFinishText != null) {
             console.log("浏览结束");
             return 0;
         }
@@ -222,24 +245,28 @@ function runGoBrowse() {
 
         if (isSuccess === -1) break; //如果 3 次之后还是不行，那就 -1
 
+        toastLog(i);
+
         let jw = judgeWay(); //去浏览之后，判断是不是滑动浏览。这里最多延时 7s
 
         sleep(1000);
 
-        if (jw === 0) swipeUp(); //进行滑动
-        else if (jw === -1) { //如果没有滑动浏览，那就可能不需要，或者浏览到上限了
+        // 进行滑动。如果是滑动的话，就是店铺，判断是否有店铺签到的操作。
+        if (jw === 0) {
+            checkIn(isCheckIn);
+            swipeUp();
+        } else if (jw === -1) { //如果没有滑动浏览，那就可能不需要，或者浏览到上限了
             if (isFull() === 1) {
                 console.log("已达上限");
-                back();
-                sleep(2000);
+                backToBefore();
                 reopenAgain();
                 continue;
             }
         }
 
         // 这里等待 15s 的浏览时间
-        console.log("15s");
-        sleep(1000 * 15);
+        console.log("14s");
+        sleep(1000 * 14);
 
 
         let isF = browseFinish(); //右下角是否出现浏览完成类似的字样。最多延时 2.5s
@@ -356,7 +383,8 @@ function versionChoice(v) {
     }
 }
 
-function runChoose() {
+function runChoose(n) {
+    if (n === 1) isCheckIn = true;
     let currentVersion = app.versionCode;
     console.log("当前版本：" + currentVersion);
     versionChoice(currentVersion);
