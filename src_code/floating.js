@@ -1,3 +1,4 @@
+toastLog("请在无障碍中选择本 APP");
 auto.waitFor();
 let waysOfShopping = 0;
 

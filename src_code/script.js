@@ -1,8 +1,14 @@
 let deviceWidth = device.width;
 let deviceHeight = device.height;
 
+/**
+ * 点击领喵币的按钮
+ * @param delay 点击之后延迟多久进行下一个函数
+ * @returns {number}
+ */
 function openBeginningBtnItem(delay) {
     let items = textStartsWith("gif;base64").depth(19).find();
+
     console.log("寻找--领喵币");
     if (items.length > 0) {
         let item = items[items.length - 1];
@@ -11,9 +17,24 @@ function openBeginningBtnItem(delay) {
         sleep(delay);
         return 1;
     }
+
+
+    if (items.length === 0) {
+        let go = text("领喵币").findOne(1000);
+        if (go != null) {
+            console.log("点击--领喵币");
+            clickItemInCenter(go);
+            sleep(delay);
+            return 1;
+        }
+    }
     return -1;
 }
 
+/**
+ * 判断是否打开领取中心
+ * @returns {number}
+ */
 function isOpenBeginning() {
     let signIn = textContains("签到").findOnce();
     if (signIn != null) {
@@ -23,6 +44,11 @@ function isOpenBeginning() {
     return -1;
 }
 
+/**
+ * 确保打开领取中心
+ * @param waitDelay
+ * @returns {number}
+ */
 function ensureOpenBeginning(waitDelay) {
     if (isOpenBeginning() === -1) {
         openBeginningBtnItem(waitDelay);
@@ -42,18 +68,9 @@ function clickItemInCenter(item, time) {
     press(x, y, time);
 }
 
-function goShopping() {
-    let shopping = text("去浏览").findOne(1000);
-    if (shopping == null) {
-        toastLog("结束--未知问题");
-        return -1;
-
-    }
-    console.log("开始浏览...");
-    clickItemInCenter(shopping);
-    return 1;
-}
-
+/**
+ * 向上滑动
+ */
 function swipeUp() {
     let x = parseInt(deviceWidth / 2);
     let duration = 500;
@@ -62,6 +79,10 @@ function swipeUp() {
     swipe(x, y[0], x, y[1], duration);
 }
 
+/**
+ * 逛店有没有满
+ * @returns {number}
+ */
 function isFull() {
     for (let i = 0; i < 10; i++) {
         if (descContains("已达上限").findOnce() || textContains("已达上限").findOnce()) {
@@ -73,41 +94,10 @@ function isFull() {
     return 0
 }
 
-
-function waitSwipe() {
-    let swipeAppear;
-    let shoppingFull;
-    for (let i = 0; i < 3; i++) {
-        swipeAppear = desc("滑动浏览得").findOne(1000);
-        if (swipeAppear != null) break;
-        shoppingFull = descContains("已达上限").findOne(1000);
-        if (shoppingFull != null) return 0;
-        console.log("i" + i);
-    }
-
-    sleep(1000);
-
-    if (swipeAppear != null) {
-        console.log("开始滑动");
-        swipeUp();
-        console.log("等待15s");
-        sleep(1000 * 16);
-    } else {
-        console.log("slow");
-        console.log("等待20s");
-        sleep(1000 * 20);
-    }
-
-    let shoppingFinish = desc("任务完成").findOne(2000);
-    if (shoppingFinish != null) {
-        console.log("逛完，准备返回");
-    } else {
-        toastLog("未知逛完，返回");
-    }
-
-    return 1;
-}
-
+/**
+ * 执行浏览结束的判断操作
+ * @returns {number}
+ */
 function browseFinish() {
     for (let i = 0; i < 10; i++) {
         let normalFinishDesc = descContains("已获得").findOnce();
@@ -125,6 +115,10 @@ function browseFinish() {
     return -1;
 }
 
+/**
+ * 判断进入浏览的时候是否需要滑动
+ * @returns {number}
+ */
 function judgeWay() {
     let timeOut = 1000 * 7;
     let delay = 250;
@@ -153,6 +147,10 @@ function judgeWay() {
     return -1;
 }
 
+/**
+ * 关闭领取中心再打开
+ * @returns {number}
+ */
 function reopenAgain() {
     console.log("reopen");
     let tbs = id("taskBottomSheet").findOnce();
@@ -162,51 +160,15 @@ function reopenAgain() {
         console.log("关闭");
         clickItemInCenter(close);
         sleep(1000);
-        return ensureOpenBeginning(1000);
+        return ensureOpenBeginning(2000);
     }
     return -1;
 }
 
-function runGoShopping() {
-    let isSuccess;
-
-    for (let i = 0; i < 20; i++) {
-        isSuccess = ensureOpenBeginning(1000);
-        if (isSuccess !== 1) break;
-        isSuccess = goShopping();
-
-        let count = 0;
-        while (isSuccess !== 1) {
-            if (reopenAgain() === 1) {
-                isSuccess = 1;
-                break;
-            }
-            if (count++ >= 2) break;
-        }
-
-        if (isSuccess === -1) break;
-
-        let st = waitSwipe();
-        if (st === 0) {
-            toastLog("已达上限，结束脚本");
-            return 0;
-        }
-
-        back();
-        sleep(1000);
-    }
-
-
-    if (isSuccess === 0) {
-        toastLog("正常结束");
-        return 0;
-    } else if (isSuccess === -1) {
-        toastLog("异常结束");
-        return 1;
-    }
-}
-
-
+/**
+ * 点击-去浏览 按钮
+ * @returns {number}
+ */
 function clickGoBrowse() {
     let browse = text("去浏览").findOne(1000);
     if (browse != null) {
@@ -234,13 +196,23 @@ function clickGoBrowse() {
     return -1;
 }
 
+/**
+ * 循环执行浏览操作
+ */
 function runGoBrowse() {
     let isSuccess = 1;
 
-    for (let i = 0; i < 40; i++) {
-        isSuccess = ensureOpenBeginning(1000);
-        if (isSuccess !== 1) break;
+    // 进行循环浏览
+    for (let i = 0; i < 50; i++) {
+        isSuccess = ensureOpenBeginning(2000); // 打开领取中心
+        if (isSuccess !== 1) break; //打开失败就 -1
 
+        // 每 5 次重新开关领取中心进行刷新
+        if (i % 5 === 0) {
+            reopenAgain();
+        }
+
+        // 点击去浏览，如果没找到 去浏览 的按钮，那就关闭领取中心再打开，三次
         for (let j = 0; j < 3; j++) {
             isSuccess = clickGoBrowse();
             if (isSuccess !== 1) {
@@ -248,13 +220,14 @@ function runGoBrowse() {
             } else break;
         }
 
-        if (isSuccess === -1) break;
+        if (isSuccess === -1) break; //如果 3 次之后还是不行，那就 -1
 
-        let jw = judgeWay();
+        let jw = judgeWay(); //去浏览之后，判断是不是滑动浏览。这里最多延时 7s
 
         sleep(1000);
-        if (jw === 0) swipeUp();
-        else if (jw === -1) {
+
+        if (jw === 0) swipeUp(); //进行滑动
+        else if (jw === -1) { //如果没有滑动浏览，那就可能不需要，或者浏览到上限了
             if (isFull() === 1) {
                 console.log("已达上限");
                 back();
@@ -262,22 +235,41 @@ function runGoBrowse() {
                 reopenAgain();
                 continue;
             }
-            console.log("4s");
-            sleep(1000 * 4);
         }
+
+        // 这里等待 15s 的浏览时间
         console.log("15s");
         sleep(1000 * 15);
 
 
-        let isF = browseFinish();
+        let isF = browseFinish(); //右下角是否出现浏览完成类似的字样。最多延时 2.5s
         if (isF === 0) {
             console.log("浏览结束，返回");
         } else if (isF === -1) {
             console.log("浏览未正常结束，返回");
         }
 
+        backToBefore();
+    }
+}
+
+/**
+ * 可能存在需要两次返回的情况
+ */
+function backToBefore() {
+    back();
+    sleep(2000);
+
+    let isGoingTo = text("正在前往会场").findOnce();
+    if (isGoingTo != null) {
         back();
         sleep(2000);
+    } else {
+        isGoingTo = desc("正在前往会场").findOnce();
+        if (isGoingTo != null) {
+            back();
+            sleep(2000);
+        }
     }
 }
 
@@ -295,31 +287,7 @@ function clearNewScript() {
     });
 }
 
-
-function warning(n) {
-    let items = ["不更新，但还是试试新脚本（不保证能用）", "清除本地下载的新脚本，使用默认脚本", "点击这里下载新APP"];
-
-    let ch = dialogs.select("当前新版本不适用于此旧APP，请更新到新APP。", items, function (index) {
-
-        if (index >= 0) {
-
-            if (index === 0) {
-
-                threads.start(function () {
-                    sleep(1000);
-                    runRun(n);
-                });
-
-            } else if (index === 1) {
-                clearNewScript();
-            } else if (index === 2) {
-                alert("哪里下载的旧APP就去哪里下载新APP，我可没心思发布");
-            }
-        }
-    });
-}
-
-function runRun(n) {
+function runRun() {
     sleep(500);
 
     let statue = runGoBrowse();
@@ -329,8 +297,7 @@ function runRun(n) {
 
 function moveFloating(n) {
     let i = -1;
-    dialogs.confirm("由于需要，请将悬浮窗移动至靠左。", "点击确认表示已完成，直接运行脚本。\n点击取消则手动前去调整。\n" +
-        "(中间浏览过程中可能会跳转到淘宝首页进行浏览，此时需要手动再次切回猫铺。)", function (clear) {
+    dialogs.confirm("由于需要，请将悬浮窗移动至靠左。", "点击确认表示已完成，直接运行脚本。\n点击取消则手动前去调整。\n", function (clear) {
         if (clear) {
             console.log("直接运行");
             i = 1;
@@ -349,13 +316,50 @@ function moveFloating(n) {
     }
 }
 
-function runChoose(n) {
-    let currentVersion = app.versionCode;
-    if (currentVersion === 1) {
-        warning(n);
-    } else {
-        moveFloating(n);
+function oldVersionWarning(v) {
+    let items = ["依旧尝试继续", "清除本地下载的新脚本，使用默认脚本", "新APP"];
+
+    let choice = -10;
+
+    dialogs.select("当前新版本可能不适用于此旧APP，请更新到新APP。", items, function (index) {
+        choice = index;
+    });
+
+    while (choice === -10) {
+        sleep(100);
     }
+
+    if (choice === -1) {
+        toastLog("未选择！");
+    } else if (choice === 0) {
+        if (v <= 6) {
+            console.log(v);
+            moveFloating();
+        }
+        runRun();
+
+    } else if (choice === 1) {
+        clearNewScript();
+    } else if (choice === 3) {
+        alert("暂没有开放下载新 APP 的功能，请自行下载");
+    }
+}
+
+function versionChoice(v) {
+    let vv = parseInt(v);
+    let minSuitVersion = 10;
+    console.log("适合运行的最低版本" + minSuitVersion);
+    if (vv < minSuitVersion) {
+        oldVersionWarning(vv);
+    } else {
+        runRun();
+    }
+}
+
+function runChoose() {
+    let currentVersion = app.versionCode;
+    console.log("当前版本：" + currentVersion);
+    versionChoice(currentVersion);
 }
 
 module.exports = runChoose;
