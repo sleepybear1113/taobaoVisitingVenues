@@ -111,7 +111,7 @@ function isFull() {
             console.log("今日已达上限");
             return 1;
         }
-        sleep(1000);
+        sleep(200);
     }
     return 0
 }
@@ -256,7 +256,7 @@ function runGoBrowse() {
             checkIn(isCheckIn);
             swipeUp();
         } else if (jw === -1) { //如果没有滑动浏览，那就可能不需要，或者浏览到上限了
-            if (isFull() === 1) {
+            if (isFull() === 1) { // 这里的最多延时 2s
                 console.log("已达上限");
                 backToBefore();
                 reopenAgain();
@@ -264,9 +264,18 @@ function runGoBrowse() {
             }
         }
 
-        // 这里等待 15s 的浏览时间
-        console.log("14s");
-        sleep(1000 * 14);
+
+        // 这里通过不同的情况区分不同的延时
+        if (jw === -1) {
+            sleep(1000 * 10);
+            console.log("10s");
+
+        } else {
+            sleep(1000 * 14);
+            console.log("14s");
+        }
+
+
 
 
         let isF = browseFinish(); //右下角是否出现浏览完成类似的字样。最多延时 2.5s
