@@ -94,6 +94,7 @@ function checkIn(flag) {
  * 向上滑动
  */
 function swipeUp() {
+    console.log("滑动屏幕");
     let x = parseInt(deviceWidth / 2);
     let duration = 500;
     let y = [parseInt(deviceHeight * 0.75), parseInt(deviceHeight * 0.25)];
@@ -192,17 +193,29 @@ function reopenAgain() {
  * 点击-去浏览 按钮
  * @returns {number}
  */
-function clickGoBrowse() {
+function clickGoBrowse(n) {
+    // 寻找-去浏览-的按钮
     let browse = text("去浏览").findOne(1000);
     if (browse != null) {
-        let guessYouLike = textContains("猜你喜欢").findOnce();
+        let guessYouLike = textContains("猜你喜欢").findOnce(); //寻找-猜你喜欢-的按钮
+
+        //如果出现了-猜你喜欢，那就点击下一个-去浏览-的按钮
         if (guessYouLike != null) {
             console.log("出现猜你喜欢");
+
+            // 这里判断控件的 top 坐标是否一样（其实我也不知道直接判断控件是否一样行不行）
             let pp = browse.parent().bounds().top;
             let ppp = guessYouLike.parent().parent().bounds().top;
             if (ppp === pp) {
                 console.log("跳过--猜你喜欢");
                 let allBrowse = text("去浏览").find();
+
+                // 如果仅剩下一个-去浏览-的按钮，并且外圈循环重复不到 2 次，那就进行返回 0 进行 reopen()
+                if (allBrowse.length <= 1 && n <= 1) {
+                    return 0;
+                }
+
+                // 循环找到一个 top 坐标不是和-猜你喜欢-一样的
                 for (let i = 0; i < allBrowse.length; i++) {
                     let item = allBrowse[i];
                     if (item.bounds().top !== browse.bounds().top) {
@@ -237,7 +250,7 @@ function runGoBrowse() {
 
         // 点击去浏览，如果没找到 去浏览 的按钮，那就关闭领取中心再打开，三次
         for (let j = 0; j < 3; j++) {
-            isSuccess = clickGoBrowse();
+            isSuccess = clickGoBrowse(j);
             if (isSuccess !== 1) {
                 reopenAgain();
             } else break;
@@ -267,15 +280,12 @@ function runGoBrowse() {
 
         // 这里通过不同的情况区分不同的延时
         if (jw === -1) {
-            sleep(1000 * 10);
             console.log("10s");
-
+            sleep(1000 * 10);
         } else {
-            sleep(1000 * 14);
             console.log("14s");
+            sleep(1000 * 14);
         }
-
-
 
 
         let isF = browseFinish(); //右下角是否出现浏览完成类似的字样。最多延时 2.5s
