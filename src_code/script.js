@@ -93,13 +93,15 @@ function checkIn(flag) {
 /**
  * 向上滑动
  */
-function swipeUp() {
+function swipeUp(n) {
     console.log("滑动屏幕");
     let x = parseInt(deviceWidth / 2);
     let duration = 500;
     let y = [parseInt(deviceHeight * 0.75), parseInt(deviceHeight * 0.25)];
-    swipe(x, y[0], x, y[1], duration);
-    swipe(x, y[0], x, y[1], duration);
+
+    for (let i = 0; i < n; i++) {
+        swipe(x, y[0], x, y[1], duration);
+    }
 }
 
 /**
@@ -233,6 +235,17 @@ function clickGoBrowse(n) {
 }
 
 /**
+ * 跳过倒计时广告
+ */
+function clickSkip() {
+    let skip = descMatches("^[0-6]\\d{0}s$").findOnce();
+    if (skip != null) {
+        console.log("滑动跳过");
+        swipeUp(1);
+    }else console.log("无广告");
+}
+
+/**
  * 循环执行浏览操作
  */
 function runGoBrowse() {
@@ -258,16 +271,17 @@ function runGoBrowse() {
 
         if (isSuccess === -1) break; //如果 3 次之后还是不行，那就 -1
 
-        toastLog(i);
+        toastLog(i); // 第几次循环
+
+        sleep(2000);
+        clickSkip(); // 判断广告跳过，向上滑动
 
         let jw = judgeWay(); //去浏览之后，判断是不是滑动浏览。这里最多延时 7s
-
-        sleep(1000);
 
         // 进行滑动。如果是滑动的话，就是店铺，判断是否有店铺签到的操作。
         if (jw === 0) {
             checkIn(isCheckIn);
-            swipeUp();
+            swipeUp(2);
         } else if (jw === -1) { //如果没有滑动浏览，那就可能不需要，或者浏览到上限了
             if (isFull() === 1) { // 这里的最多延时 2s
                 console.log("已达上限");
