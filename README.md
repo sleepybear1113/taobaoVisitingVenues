@@ -2,6 +2,8 @@
 
 ## 简介
 
+**更新这段话的时候，离双十一就剩下差不多 6 小时了。提前祝大家双十一剁手愉快。咱们明年 618 和 1111 再见（就是不知道春节有没有活动了）**
+
 用来双十一淘宝逛会场来获得喵币的自动化脚本，基于 [auto.js pro 7.0]: https://pro.autojs.org/ 的无障碍服务，for Android 7.0+（auto 8.0 版本把淘宝等 APP 屏蔽了）。理解上和电脑版的按键精灵的区别不大。这里只提供刷猫币的脚本帮助大家远离繁琐的浏览操作（if 能）。同时带上 [hyb1996](https://github.com/hyb1996) 大佬的开源的 free 版的 auto.js，参见这个仓库 [Auto.js]: https://github.com/hyb1996/Auto.js ，里面有相关的使用，有兴趣给这个点个星星哈哈哈，是个超棒的项目呢。
 
 如果嫌 GitHub 下载速度慢，可以去 Gitee 下载 apk。Gitee 的主要的内容都是同步这里的，地址 [taobaoVisitingVenues]: https://gitee.com/sleepybear1113/taobaoVisitingVenues 
