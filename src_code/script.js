@@ -19,26 +19,16 @@ function clickItemInCenter(item, time) {
  * @returns {number}
  */
 function openBeginningBtnItem(delay) {
-    let items = textStartsWith("gif;base64").depth(19).find();
 
     console.log("寻找--领喵币");
-    if (items.length > 0) {
-        let item = items[items.length - 1];
+
+    let go = text("领喵币").findOne(1000);
+    if (go != null) {
         console.log("点击--领喵币");
-        clickItemInCenter(item);
+        clickItemInCenter(go);
         sleep(delay);
         return 1;
-    }
 
-
-    if (items.length === 0) {
-        let go = text("领喵币").findOne(1000);
-        if (go != null) {
-            console.log("点击--领喵币");
-            clickItemInCenter(go);
-            sleep(delay);
-            return 1;
-        }
     }
     return -1;
 }
