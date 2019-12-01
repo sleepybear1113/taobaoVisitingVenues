@@ -19,18 +19,9 @@ function clickItemInCenter(item, time) {
  * @returns {number}
  */
 function openBeginningBtnItem(delay) {
-
-    console.log("寻找--领喵币");
-
-    let go = text("领喵币").findOne(1000);
-    if (go != null) {
-        console.log("点击--领喵币");
-        clickItemInCenter(go);
-        sleep(delay);
-        return 1;
-
-    }
-    return -1;
+    click(parseInt(deviceWidth * 0.88), parseInt(deviceWidth * 1.5));
+    sleep(1000);
+    return 1;
 }
 
 /**
@@ -38,9 +29,9 @@ function openBeginningBtnItem(delay) {
  * @returns {number}
  */
 function isOpenBeginning() {
-    let signIn = textContains("签到").findOnce();
+    let signIn = textContains("分享给好友").findOnce();
     if (signIn != null) {
-        console.log("成功--打开领取中心");
+        console.log("成功--打开充能中心");
         return 1;
     }
     return -1;
@@ -56,9 +47,11 @@ function ensureOpenBeginning(waitDelay) {
         openBeginningBtnItem(waitDelay);
     }
     if (isOpenBeginning() === 1) return 1;
+    sleep(2000);
+    if (isOpenBeginning() === 1) return 1;
 
-    console.error("失败--打开领取中心");
-    toast("失败--打开领取中心");
+    console.error("失败--打开充能中心");
+    toast("失败--打开充能中心");
     return -1;
 }
 
@@ -77,13 +70,13 @@ function checkIn(flag) {
             sleep(500);
         }
     }
-
 }
 
 /**
  * 向上滑动
  */
 function swipeUp(n) {
+    sleep(200);
     console.log("滑动屏幕");
     let x = parseInt(deviceWidth / 2);
     let duration = 500;
@@ -150,7 +143,7 @@ function judgeWay() {
         let directBrowseDesc = desc("浏览").findOnce();
         let directBrowseText = text("浏览").findOnce();
         if (directBrowseDesc != null || directBrowseText != null) {
-            if (descContains("00喵币").findOnce() != null || textContains("00喵币").findOnce() != null) {
+            if (descContains("00 能量").findOnce() != null || textContains("00 能量").findOnce() != null) {
                 console.log("已获取到正常浏览模式");
                 return 1;
             }
@@ -168,17 +161,13 @@ function judgeWay() {
  * @returns {number}
  */
 function reopenAgain() {
-    console.log("reopen");
-    let tbs = id("taskBottomSheet").findOnce();
+    toastLog("重新打开（进行刷新界面）");
+    let tbs = className("Button").findOnce();
     if (tbs == null) return -1;
-    let close = tbs.child(1);
-    if (close != null) {
-        console.log("关闭");
-        clickItemInCenter(close);
-        sleep(1000);
-        return ensureOpenBeginning(2000);
-    }
-    return -1;
+    console.log("关闭");
+    clickItemInCenter(tbs);
+    sleep(1000);
+    return ensureOpenBeginning(2000);
 }
 
 /**
@@ -187,7 +176,7 @@ function reopenAgain() {
  */
 function clickGoBrowse(n) {
     // 寻找-去浏览-的按钮
-    let browse = text("去浏览").findOne(1000);
+    let browse = textContains("去浏览").findOne(1000);
     if (browse != null) {
         let guessYouLike = textContains("猜你喜欢").findOnce(); //寻找-猜你喜欢-的按钮
 
@@ -232,7 +221,7 @@ function clickSkip() {
     if (skip != null) {
         console.log("滑动跳过");
         swipeUp(1);
-    }else console.log("无广告");
+    } else console.log("无广告");
 }
 
 /**
@@ -342,7 +331,7 @@ function runRun() {
 
     let statue = runGoBrowse();
     toastLog("去浏览--浏览结束");
-    alert("结束");
+    alert("结束\n(如果点击猜你喜欢去首页，那么离开了主界面会被判定结束了，需要再次运行)");
 }
 
 function moveFloating(n) {
@@ -414,3 +403,4 @@ function runChoose(n) {
 }
 
 module.exports = runChoose;
+// runChoose();
