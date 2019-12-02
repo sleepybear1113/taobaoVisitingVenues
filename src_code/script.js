@@ -149,6 +149,11 @@ function judgeWay() {
             }
         }
 
+        if (descContains("已达上限").findOnce() || textContains("已达上限").findOnce()) {
+            console.log("今日已达上限");
+            return -1;
+        }
+
         sleep(delay);
     }
 
@@ -176,7 +181,7 @@ function reopenAgain() {
  */
 function clickGoBrowse(n) {
     // 寻找-去浏览-的按钮
-    let browse = textContains("去浏览").findOne(1000);
+    let browse = textMatches(/.*?去*[览索]/).findOne(1000);
     if (browse != null) {
         let guessYouLike = textContains("猜你喜欢").findOnce(); //寻找-猜你喜欢-的按钮
 
@@ -185,13 +190,13 @@ function clickGoBrowse(n) {
             console.log("出现猜你喜欢");
 
             // 这里判断控件的 top 坐标是否一样（其实我也不知道直接判断控件是否一样行不行）
-            let pp = browse.parent().bounds().top;
-            let ppp = guessYouLike.parent().parent().bounds().top;
+            let pp = browse.bounds().top;
+            let ppp = guessYouLike.bounds().top;
             if (ppp === pp) {
                 console.log("跳过--猜你喜欢");
-                let allBrowse = text("去浏览").find();
+                let allBrowse = textMatches(/.*?去*[览索]/).find();
 
-                // 如果仅剩下一个-去浏览-的按钮，并且外圈循环重复不到 2 次，那就进行返回 0 进行 reopen()
+                // 如果仅剩下一个-去浏览/去搜索-的按钮，并且外圈循环重复不到 2 次，那就进行返回 0 进行 reopen()
                 if (allBrowse.length <= 1 && n <= 1) {
                     return 0;
                 }
