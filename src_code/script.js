@@ -15,10 +15,9 @@ function clickItemInCenter(item, time) {
 
 /**
  * 点击领喵币的按钮
- * @param delay 点击之后延迟多久进行下一个函数
  * @returns {number}
  */
-function openBeginningBtnItem(delay) {
+function openBeginningBtnItem() {
     click(parseInt(deviceWidth * 0.88), parseInt(deviceWidth * 1.5));
     sleep(1000);
     return 1;
@@ -31,7 +30,7 @@ function openBeginningBtnItem(delay) {
 function isOpenBeginning() {
     let signIn = textContains("分享给好友").findOnce();
     if (signIn != null) {
-        console.log("成功--打开充能中心");
+        console.log("成功--打开领取中心");
         return 1;
     }
     return -1;
@@ -50,8 +49,8 @@ function ensureOpenBeginning(waitDelay) {
     sleep(2000);
     if (isOpenBeginning() === 1) return 1;
 
-    console.error("失败--打开充能中心");
-    toast("失败--打开充能中心");
+    console.error("失败--打开领取中心");
+    toast("失败--打开领取中心");
     return -1;
 }
 
@@ -76,7 +75,7 @@ function checkIn(flag) {
  * 向上滑动
  */
 function swipeUp(n) {
-    sleep(200);
+    sleep(300);
     console.log("滑动屏幕");
     let x = parseInt(deviceWidth / 2);
     let duration = 500;
@@ -97,7 +96,7 @@ function isFull() {
             console.log("今日已达上限");
             return 1;
         }
-        sleep(200);
+        sleep(250);
     }
     return 0
 }
@@ -143,13 +142,13 @@ function judgeWay() {
         let directBrowseDesc = desc("浏览").findOnce();
         let directBrowseText = text("浏览").findOnce();
         if (directBrowseDesc != null || directBrowseText != null) {
-            if (descContains("00 能量").findOnce() != null || textContains("00 能量").findOnce() != null) {
+            if (descMatches(/.*?得\d{3,6}.*?/).findOnce() != null || textMatches(/.*?得\d{3,}/).findOnce() != null) {
                 console.log("已获取到正常浏览模式");
                 return 1;
             }
         }
 
-        if (descContains("已达上限").findOnce() || textContains("已达上限").findOnce()) {
+        if (descMatches(/.*?已达上限|.*?已领/).findOnce() || textMatches(/.*?已达上限|.*?已领/).findOnce()) {
             console.log("今日已达上限");
             return -1;
         }
@@ -213,6 +212,11 @@ function clickGoBrowse(n) {
 
         console.log("点击--去浏览");
         clickItemInCenter(browse);
+
+        if (guessYouLike != null && n >= 2) {
+            console.log("可能回到首页了，等待三秒");
+            return 2;
+        }
         return 1;
     }
     return -1;
@@ -249,6 +253,11 @@ function runGoBrowse() {
         for (let j = 0; j < 3; j++) {
             isSuccess = clickGoBrowse(j);
             if (isSuccess !== 1) {
+
+                if (isSuccess === 2) {
+                    openBeginningBtnItem();
+                    sleep(3000);
+                }
                 reopenAgain();
             } else break;
         }
@@ -264,8 +273,7 @@ function runGoBrowse() {
 
         // 进行滑动。如果是滑动的话，就是店铺，判断是否有店铺签到的操作。
         if (jw === 0) {
-            checkIn(isCheckIn);
-            swipeUp(2);
+            swipeUp(1);
         } else if (jw === -1) { //如果没有滑动浏览，那就可能不需要，或者浏览到上限了
             if (isFull() === 1) { // 这里的最多延时 2s
                 console.log("已达上限");
@@ -281,8 +289,8 @@ function runGoBrowse() {
             console.log("10s");
             sleep(1000 * 10);
         } else {
-            console.log("14s");
-            sleep(1000 * 14);
+            console.log("14.5s");
+            sleep(1000 * 14.5);
         }
 
 
@@ -315,6 +323,17 @@ function backToBefore() {
             sleep(2000);
         }
     }
+}
+
+function isAtHomePage() {
+    let myTaobao = desc("我的淘宝").findOnce();
+    if (myTaobao != null) {
+        console.log("回到淘宝首页，等三秒");
+        openBeginningBtnItem();
+        sleep(3000);
+        return 1;
+    }
+    return 0;
 }
 
 function removeFile(fileName) {
