@@ -1,0 +1,29 @@
+{
+  "assets": [],
+  "build": {
+    "build_id": "FAA3CDFA-2",
+    "build_number": 2,
+    "build_time": 1590065648711,
+    "release": false
+  },
+  "encryptLevel": 0,
+  "useFeatures": [],
+  "icon": "res/icon.png",
+  "launchConfig": {
+    "displaySplash": true,
+    "hideLogs": false,
+    "splashIcon": "res/splashIcon.png",
+    "splashText": "Powered by Auto.js Pro",
+    "stableMode": false
+  },
+  "main": "main.js",
+  "name": "淘宝京东逛",
+  "optimization": {
+    "removeOpenCv": true,
+    "unusedResources": true
+  },
+  "packageName": "com.xjx.tbmb",
+  "scripts": {},
+  "versionCode": 200,
+  "versionName": "2.0.0"
+}
