@@ -101,15 +101,14 @@ window.start.click(() => {
     let ss = "/sdcard/脚本/Internet/淘宝京东/京东/script.js";
     if (th == null) {
         th = threads.start(function () {
-            let runChoose = require(ss);
-            runChoose(waysOfShopping);
+            require(ss);
         });
     } else {
         if (th.isAlive()) {
             toastLog("脚本在运行了");
         } else {
             th = threads.start(function () {
-                let runChoose = require(ss);
+                require(ss);
             });
         }
     }
