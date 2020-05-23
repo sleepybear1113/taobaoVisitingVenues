@@ -189,7 +189,7 @@ function myBack() {
     sleep(2000);
 }
 
-function run() {
+function run1() {
     let ok;
 
     let count = 0;
@@ -224,9 +224,12 @@ function run() {
     return 0;
 }
 
-let m = run();
-if (m === -1) {
-    alert("结束（异常）");
-} else {
-    alert("结束（正常）");
+function run() {
+    let m = run1();
+    if (m === -1) {
+        alert("结束（异常）");
+    } else {
+        alert("结束（正常）");
+    }
 }
+module.exports = run;
