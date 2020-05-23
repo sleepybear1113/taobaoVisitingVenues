@@ -97,18 +97,24 @@ window.setting.click(() => {
 });
 
 let th = null;
+let script = null;
 window.start.click(() => {
     let ss = "/sdcard/脚本/Internet/淘宝京东/京东/script.js";
+    if (script == null) {
+        script = require(ss);
+    }
+
+
     if (th == null) {
         th = threads.start(function () {
-            require(ss);
+            script();
         });
     } else {
         if (th.isAlive()) {
             toastLog("脚本在运行了");
         } else {
             th = threads.start(function () {
-                require(ss);
+                script();
             });
         }
     }
