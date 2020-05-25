@@ -2,6 +2,7 @@ toastLog("开始");
 
 let deviceWidth = device.width;
 let deviceHeight = device.height;
+let flag = false;
 
 function clickItemInCenter(item, time) {
     if (time == null) time = 50;
@@ -34,105 +35,170 @@ function isOpenMenu() {
 }
 
 function goToFinish() {
-    let goes = text("去完成").find();
-    let excludes = excludeGo();
-    let includes = includeGo();
+    let all = getAll();
+    let excludeWords = ["邀请", "战队", "游戏", "新人", "加购"];
+    if (flag === true) {
+        excludeWords = ["邀请", "战队", "游戏", "新人"];
+    }
 
-    let go;
-    go = exclude(goes, excludes);
-    go = include(go, includes);
-    if (go == null || go.length === 0) {
+    let goes = exclude(all, excludeWords);
+    if (goes == null || goes.length === 0) {
         console.log("队列为空");
         return 1;
     }
 
-    clickItemInCenter(go[0]);
-    sleep(1000);
+    browseChoice(goes[0]);
     return 0;
 }
 
-function excludeGo() {
-    let excludeWords = ["邀请好友", "加入一支战队", "甄选"];
-    let excludeBounds = [];
-    for (let i = 0; i < excludeWords.length; i++) {
-        let word = excludeWords[i];
-        let item = textContains(word).find();
+function browseChoice(go) {
+    let item = go[0];
+    let introItem = go[1];
+    let introText = introItem.text();
 
-        if (item != null && item.length > 0) {
-            for (let j = 0; j < item.length; j++) {
-                let b = item[j].bounds();
-                excludeBounds.push([b.top, b.bottom]);
-            }
+    // 点击 甄选
+    if (introText.indexOf("商品") !== -1) {
+        console.log("点击浏览");
+        if (introText.indexOf("加购") !== -1) {
+
+        } else if (introText.indexOf("浏览") !== -1) {
+            browseProducts(go);
         }
+    } else {
+        console.log("普通浏览");
+        browseNormal(go);
     }
-
-    return excludeBounds;
 }
 
-
-function includeGo() {
-    let includeWords = ["去逛", "浏览"];
-    let excludeBounds = [];
-    for (let i = 0; i < includeWords.length; i++) {
-        let word = includeWords[i];
-        let item = textContains(word).find();
-
-        if (item != null && item.length > 0) {
-            for (let j = 0; j < item.length; j++) {
-                let b = item[j].bounds();
-                excludeBounds.push([b.top, b.bottom]);
-            }
+function browseProducts(go) {
+    let item = go[0];
+    let introText = go[1].text();
+    console.log(introText);
+    clickItemInCenter(item);
+    sleep(2000);
+    let w = true;
+    for (let i = 0; i < 10; i++) {
+        let e = textContains("浏览").findOnce();
+        if (e) {
+            w = false;
+            break;
         }
     }
+    sleep(2000);
+    if (w) {
+        console.log("未加载成功");
+        return -1;
+    }
 
-    return excludeBounds;
+
+    let times = 0;
+    let browsedProducts = [];
+
+    for (let m = 0; m < 5; m++) {
+        let products = getProducts(browsedProducts);
+        for (let i = 0; i < products.length; i++) {
+            let item = products[i];
+            browsedProducts.push(item.text());
+            let re = browseProduct(item);
+            times += re;
+            if (++times >= 5) {
+                myBack(2);
+                return 0;
+            }
+        }
+
+        console.log("下滑");
+        swipe(parseInt(deviceWidth / 2), parseInt(deviceHeight * 0.8), parseInt(deviceWidth / 2), parseInt(deviceHeight * 0.2), 500);
+        sleep(500);
+    }
+
+    myBack(2);
 }
 
-function exclude(items, excludes) {
-    let res = [];
-    for (let i = 0; i < items.length; i++) {
-        let y = items[i].bounds().centerY();
-        let flag = true;
+function getProducts(browsedProducts) {
+    console.log("获取界面的商品");
+    let products = textContains("¥").find();
+    let names = [];
 
-        for (let j = 0; j < excludes.length; j++) {
-            let ex = excludes[j];
-            if (ex[0] < y && ex[1] > y) {
-                flag = false;
-                break;
+    for (let i = 0; i < products.length; i++) {
+        let name = products[i].parent().child(0);
+        let top = name.bounds().top;
+        if (top + 10 <= deviceHeight) {
+            if (!isRepeat(name, browsedProducts)) {
+                names.push(name);
             }
-        }
-
-        if (flag) {
-            res.push(items[i]);
         }
     }
 
-    return res;
+    console.log("获取到商品数量：" + names.length);
+    return names;
 }
 
-function include(items, includes) {
-    let res = [];
-    for (let i = 0; i < items.length; i++) {
-        let y = items[i].bounds().centerY();
-        let flag = false;
-
-        for (let j = 0; j < includes.length; j++) {
-            let ex = includes[j];
-            if (ex[0] < y && ex[1] > y) {
-                flag = true;
-                break;
-            }
-        }
-
-        if (flag) {
-            res.push(items[i]);
-        }
+function isRepeat(product, browsedProducts) {
+    if (browsedProducts == null || browsedProducts.length === 0) {
+        return false;
     }
 
-    return res;
+    for (let i = 0; i < browsedProducts.length; i++) {
+        let name = browsedProducts[i];
+        if (name === product.text()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function browseProduct(product) {
+    console.log(product.text());
+    clickItemInCenter(product);
+    sleep(1500);
+    let re = retry();
+    back();
+    sleep(1000);
+    return re;
+}
+
+function retry() {
+    let re;
+    re = textContains("重试").findOnce();
+    if (re) {
+        clickItemInCenter(re);
+        console.log("重试");
+    }
+    sleep(500);
+
+    for (let i = 0; i < 3; i++) {
+        re = textContains("重试").findOnce();
+        if (re == null) {
+            return 0;
+        }
+        clickItemInCenter(re);
+        sleep(500);
+    }
+
+    console.log("重试失败");
+    return -1;
+}
+
+function browseNormal(go) {
+    let item = go[0];
+    let introText = go[1].text();
+    console.log(introText);
+    if (item) {
+        clickItemInCenter(item);
+        timeCountDown();
+        if (introText.indexOf("庆生") !== -1) {
+            myBack(2);
+        } else {
+            myBack(1);
+        }
+    } else {
+        console.log("为空");
+    }
 }
 
 function timeCountDown() {
+    sleep(1000);
     toastLog("请等待");
     let countDown;
     let finish;
@@ -143,12 +209,25 @@ function timeCountDown() {
     for (let i = 0; i < m; i++) {
         sleep(250);
 
-        // 这个是检查是否有 倒计时 0-8 秒的数字存在。
+        // 这个是检查是否有 倒计时 0-8 秒的数字存在，格式为 1，1s，01，01s，1S，01S。
         for (let j = 0; j <= 8; j++) {
             countDown = text(String(j)).findOnce();
             if (countDown == null) {
                 countDown = text("0" + String(j)).findOnce();
             }
+            if (countDown == null) {
+                countDown = text(String(j) + "S").findOnce();
+            }
+            if (countDown == null) {
+                countDown = text("0" + String(j) + "S").findOnce();
+            }
+            if (countDown == null) {
+                countDown = text(String(j) + "s").findOnce();
+            }
+            if (countDown == null) {
+                countDown = text("0" + String(j) + "s").findOnce();
+            }
+
 
             if (countDown && countDown.bounds().left <= deviceWidth * 0.2) {
                 if (m === beginTime) {
@@ -173,19 +252,27 @@ function timeCountDown() {
     } else if (m > beginTime) {
         console.log("正常返回");
     }
-    myBack();
 }
 
-function myBack() {
-    back();
-    sleep(1000);
-    if (isOpenMenu() === -1) {
-        let leave = textContains("离开").findOnce();
-        if (leave) {
-            clickItemInCenter(leave);
-            sleep(1000);
+function myBack(m) {
+    console.log("返回");
+    if (m === 1) {
+        back();
+        sleep(500);
+    } else if (m === 2) {
+        let backButton = desc("返回").findOnce();
+        if (backButton) {
+            clickItemInCenter(backButton);
         }
+        sleep(500);
     }
+
+    let leave = textContains("离开").findOnce();
+    if (leave) {
+        clickItemInCenter(leave);
+        sleep(500);
+    }
+
     sleep(2000);
 }
 
@@ -219,12 +306,12 @@ function run1() {
             console.log("结束");
             return 0;
         }
-        timeCountDown();
     }
     return 0;
 }
 
-function run() {
+function run(f) {
+    flag = f;
     let m = run1();
     if (m === -1) {
         alert("结束（异常）");
@@ -232,4 +319,75 @@ function run() {
         alert("结束（正常）");
     }
 }
-module.exports = run;
+
+function getMoney() {
+    let get;
+    let f = true;
+    let m = 0;
+    while (f) {
+        toastLog(++m);
+        console.log("寻找...")
+        for (let i = 0; i < 20; i++) {
+            f = false;
+            get = idContains("goldElfin").findOnce();
+            if (get) {
+                console.log("找到了")
+                break;
+            }
+            sleep(250);
+        }
+
+        sleep(1000);
+
+        if (get) {
+            console.log("循环点击")
+            for (let j = 0; j < 20; j++) {
+                clickItemInCenter(get, 10);
+                sleep(40);
+            }
+            f = true;
+            sleep(2000);
+        }
+    }
+    alert("结束");
+}
+
+function getAll() {
+    let goes = text("去完成").find();
+    let all = [];
+    for (let i = 0; i < goes.length; i++) {
+        let item = goes[i];
+        let p = item.parent().parent().parent();
+        let introduction = p.child(0).child(1);
+        all.push([item, introduction]);
+    }
+    return all;
+}
+
+
+function exclude(items, excludes) {
+    let res = [];
+    for (let i = 0; i < items.length; i++) {
+        let item = items[i];
+        let go = item[0];
+        let intro = item[1];
+        let flag = true;
+
+        for (let j = 0; j < excludes.length; j++) {
+            if (intro.text().indexOf(excludes[j]) !== -1) {
+                flag = false;
+                break;
+            }
+        }
+
+        if (flag) {
+            res.push(item);
+        }
+    }
+
+    return res;
+}
+
+run();
+// browseProducts();
+// module.exports = [run, getMoney];
