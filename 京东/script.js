@@ -388,6 +388,6 @@ function exclude(items, excludes) {
     return res;
 }
 
-run();
+// run();
 // browseProducts();
-// module.exports = [run, getMoney];
+module.exports = [run, getMoney];
