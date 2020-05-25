@@ -1,6 +1,6 @@
 toastLog("请在无障碍中选择本 APP");
 auto.waitFor();
-let waysOfShopping = 0;
+let option = 0;
 
 let window = floaty.window(
     <vertical>
@@ -79,16 +79,16 @@ window.exit.setOnTouchListener(function (view, event) {
 
 
 window.setting.click(() => {
-    let items = ["待开发", "待开发"];
+    let items = ["普通浏览", "循环点击得金币"];
     dialogs.select("方式", items, function (index) {
 
         if (index >= 0) {
             toastLog("已选择第 " + (index + 1) + " 个：" + items[index]);
 
             if (index === 0) {
-                waysOfShopping = 0;
+                option = 0;
             } else if (index === 1) {
-                waysOfShopping = 1;
+                option = 1;
             }
         } else {
             toastLog("取消选择");
@@ -104,17 +104,22 @@ window.start.click(() => {
         script = require(ss);
     }
 
+    if (script.length < option + 1) {
+        toastLog("该功能未开发，请选择其他功能");
+        return;
+    }
+
 
     if (th == null) {
         th = threads.start(function () {
-            script();
+            script[option]();
         });
     } else {
         if (th.isAlive()) {
             toastLog("脚本在运行了");
         } else {
             th = threads.start(function () {
-                script();
+                script[option]();
             });
         }
     }
@@ -137,3 +142,4 @@ window.stop.click(() => {
         }
     }
 });
+
