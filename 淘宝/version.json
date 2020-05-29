@@ -1,0 +1,8 @@
+{
+  "scripts": [
+    "floating.js",
+    "script.js"
+  ],
+  "floating.js": "2",
+  "script.js": "2"
+}
