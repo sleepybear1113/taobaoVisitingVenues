@@ -3,8 +3,6 @@ toastLog("开始");
 let deviceWidth = device.width;
 let deviceHeight = device.height;
 
-let isCheckIn = false;
-
 function clickItemInCenter(item, time) {
     if (time == null) time = 50;
     if (item == null) return;
@@ -18,7 +16,11 @@ function clickItemInCenter(item, time) {
  * @returns {number}
  */
 function openBeginningBtnItem() {
-    click(parseInt(deviceWidth * 0.88), parseInt(deviceWidth * 1.5));
+    let o = textContains("做任务，领喵币").findOnce();
+    if (o == null) {
+        return -1;
+    }
+    clickItemInCenter(o);
     sleep(1000);
     return 1;
 }
@@ -28,7 +30,7 @@ function openBeginningBtnItem() {
  * @returns {number}
  */
 function isOpenBeginning() {
-    let signIn = textContains("分享给好友").findOnce();
+    let signIn = textContains("关闭").findOnce();
     if (signIn != null) {
         console.log("成功--打开领取中心");
         return 1;
@@ -38,12 +40,11 @@ function isOpenBeginning() {
 
 /**
  * 确保打开领取中心
- * @param waitDelay
  * @returns {number}
  */
-function ensureOpenBeginning(waitDelay) {
+function ensureOpenBeginning() {
     if (isOpenBeginning() === -1) {
-        openBeginningBtnItem(waitDelay);
+        openBeginningBtnItem();
     }
     if (isOpenBeginning() === 1) return 1;
     sleep(2000);
@@ -166,12 +167,12 @@ function judgeWay() {
  */
 function reopenAgain() {
     toastLog("重新打开（进行刷新界面）");
-    let tbs = className("Button").findOnce();
+    let tbs = text("关闭").findOnce();
     if (tbs == null) return -1;
     console.log("关闭");
     clickItemInCenter(tbs);
     sleep(1000);
-    return ensureOpenBeginning(2000);
+    return ensureOpenBeginning();
 }
 
 /**
@@ -228,9 +229,10 @@ function clickGoBrowse(n) {
 function clickSkip() {
     let skip = descMatches("^[0-6]\\d{0}s$").findOnce();
     if (skip != null) {
-        console.log("滑动跳过");
+        console.log("滑动跳过广告");
         swipeUp(1);
-    } else console.log("无广告");
+        sleep(1000);
+    }
 }
 
 /**
@@ -245,7 +247,7 @@ function runGoBrowse() {
         if (isSuccess !== 1) break; //打开失败就 -1
 
         // 每 5 次重新开关领取中心进行刷新
-        if (i % 5 === 0) {
+        if (i % 5 === 5) {
             reopenAgain();
         }
 
@@ -336,20 +338,6 @@ function isAtHomePage() {
     return 0;
 }
 
-function removeFile(fileName) {
-    if (files.exists(fileName)) {
-        files.remove(fileName);
-    }
-}
-
-function clearNewScript() {
-    threads.start(function () {
-        removeFile("/sdcard/脚本/淘宝喵币/script.js");
-        removeFile("/sdcard/脚本/淘宝喵币/version.txt");
-        toastLog("清除完成");
-    });
-}
-
 function runRun() {
     sleep(500);
 
@@ -358,73 +346,87 @@ function runRun() {
     alert("结束\n(如果点击猜你喜欢去首页，那么离开了主界面会被判定结束了，需要再次运行)");
 }
 
-function moveFloating(n) {
-    let i = -1;
-    dialogs.confirm("由于需要，请将悬浮窗移动至靠左。", "点击确认表示已完成，直接运行脚本。\n点击取消则手动前去调整。\n", function (clear) {
-        if (clear) {
-            console.log("直接运行");
-            i = 1;
-        } else {
-            toastLog("请将悬浮窗移动至靠左");
-            i = 0;
+function run2() {
+    for (let i = 0; i < 50; i++) {
+        toastLog((i + 1));
+        ensureOpenBeginning();
+
+        if (i % 5 === 4) {
+            reopenAgain();
         }
-    });
 
-
-    while (i === -1) {
-        slepp(100);
-    }
-    if (i === 1) {
-        runRun(n);
-    }
-}
-
-function oldVersionWarning(v) {
-    let items = ["依旧尝试继续", "清除本地下载的新脚本，使用默认脚本", "新APP"];
-
-    let choice = -10;
-
-    dialogs.select("当前新版本可能不适用于此旧APP，请更新到新APP。", items, function (index) {
-        choice = index;
-    });
-
-    while (choice === -10) {
-        sleep(100);
-    }
-
-    if (choice === -1) {
-        toastLog("未选择！");
-    } else if (choice === 0) {
-        if (v <= 6) {
-            console.log(v);
-            moveFloating();
+        sleep(1000);
+        let f1 = browse1();
+        if (f1 === 0) {
+            alert("结束");
+            return;
         }
-        runRun();
-
-    } else if (choice === 1) {
-        clearNewScript();
-    } else if (choice === 3) {
-        alert("暂没有开放下载新 APP 的功能，请自行下载");
+        sleep(1500);
     }
 }
 
-function versionChoice(v) {
-    let vv = parseInt(v);
-    let minSuitVersion = 10;
-    console.log("适合运行的最低版本" + minSuitVersion);
-    if (vv < minSuitVersion) {
-        oldVersionWarning(vv);
-    } else {
-        runRun();
+function browse1() {
+    let go = textMatches(/.*?去[浏完].*?/).findOnce();
+    if (go == null) {
+        console.log("结束");
+        return 0;
     }
+
+    let introduction = go.parent().child(0);
+    let intro = null;
+    if (introduction != null) {
+        intro = introduction.text();
+    }
+
+
+    waiting(go, intro);
 }
 
-function runChoose(n) {
-    if (n === 1) isCheckIn = true;
-    let currentVersion = app.versionCode;
-    console.log("当前版本：" + currentVersion);
-    versionChoice(currentVersion);
+function waiting(item, intro) {
+    console.log(intro);
+    clickItemInCenter(item);
+
+    sleep(2000);
+
+    let begin = 10;
+    let end = 40;
+    let m = begin;
+
+    for (let i = 0; i < m; i++) {
+        clickSkip();
+
+        if (m === begin) {
+            let wait = descContains("浏览").findOnce();
+            if (wait == null) {
+                wait = textContains("浏览").findOnce();
+            }
+            if (wait) {
+                i = 0;
+                m = end;
+                sleep(500);
+                swipeUp(1);
+                console.log("等待读秒");
+            }
+        }
+
+
+        let finish = descContains("完成").findOnce();
+        if (finish == null) {
+            finish = textContains("完成").findOnce();
+        }
+        if (finish) {
+            console.log("浏览完成，返回");
+            back();
+            return 1;
+        }
+
+
+        sleep(500);
+    }
+
+    console.log("超时");
+    back();
 }
 
-module.exports = runChoose;
-// runChoose();
+module.exports = [run2];
+// run2();
