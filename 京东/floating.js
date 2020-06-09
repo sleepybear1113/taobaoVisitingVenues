@@ -1,5 +1,6 @@
 toastLog("请在无障碍中选择本 APP");
 auto.waitFor();
+toastLog("更多功能在“选择功能”内");
 let option = 0;
 
 let window = floaty.window(
@@ -19,7 +20,7 @@ let window = floaty.window(
 
 let deviceWidth = device.width;
 let deviceHeight = device.height;
-window.setPosition(parseInt(deviceWidth * 0.15), parseInt(deviceHeight * 0.15));
+window.setPosition(parseInt(deviceWidth * 0.1), parseInt(deviceHeight * 0.1));
 setInterval(() => {
 }, 1000);
 
@@ -79,17 +80,12 @@ window.exit.setOnTouchListener(function (view, event) {
 
 
 window.setting.click(() => {
-    let items = ["普通浏览", "循环点击得金币"];
+    let items = ["普通浏览", "循环点击得金币", "浏览+自动加入会员", "浏览+会员+加购"];
     dialogs.select("方式", items, function (index) {
 
         if (index >= 0) {
             toastLog("已选择第 " + (index + 1) + " 个：" + items[index]);
-
-            if (index === 0) {
-                option = 0;
-            } else if (index === 1) {
-                option = 1;
-            }
+            option = index;
         } else {
             toastLog("取消选择");
         }
@@ -105,7 +101,7 @@ window.start.click(() => {
     }
 
     if (script.length < option + 1) {
-        toastLog("该功能未开发，请选择其他功能");
+        toastLog("该功能未完待续，请选择其他功能");
         return;
     }
 
