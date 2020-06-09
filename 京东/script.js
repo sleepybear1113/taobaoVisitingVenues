@@ -2,7 +2,8 @@ toastLog("开始");
 
 let deviceWidth = device.width;
 let deviceHeight = device.height;
-let flag = false;
+let addFlag = false;
+let vipFlag = true;
 
 function clickItemInCenter(item, time) {
     if (time == null) time = 50;
@@ -30,18 +31,27 @@ function isOpenMenu() {
         console.log("未打开任务中心");
         return -1;
     }
-    console.log("已打开任务中心")
+    console.log("已打开任务中心");
+    refresh();
     return 0;
+}
+
+function refresh() {
+    clickItemInCenter(textContains("刷新").findOnce());
 }
 
 function goToFinish() {
     let all = getAll();
-    let excludeWords = ["邀请", "战队", "游戏", "新人", "加购"];
-    if (flag === true) {
-        excludeWords = ["邀请", "战队", "游戏", "新人"];
+    let excludeWordsBase = ["邀请", "战队", "游戏", "新人"];
+    if (addFlag !== true) {
+        excludeWordsBase.push("加购");
+    }
+    if (vipFlag !== true) {
+        excludeWordsBase.push("开通");
     }
 
-    let goes = exclude(all, excludeWords);
+
+    let goes = exclude(all, excludeWordsBase);
     if (goes == null || goes.length === 0) {
         console.log("队列为空");
         return 1;
@@ -64,9 +74,39 @@ function browseChoice(go) {
         } else if (introText.indexOf("浏览") !== -1) {
             browseProducts(go);
         }
+    } else if (introText.indexOf("开通") !== -1) {
+        addVip(go);
     } else {
         console.log("普通浏览");
         browseNormal(go);
+    }
+}
+
+function addVip(go) {
+    let item = go[0];
+    let introText = go[1].text();
+    console.log(introText);
+    clickItemInCenter(item);
+    sleep(2000);
+
+    let join;
+    for (let i = 0; i < 5; i++) {
+        join = textContains("加入").findOnce();
+        if (join != null) {
+            break;
+        }
+        sleep(500);
+    }
+    if (join == null) {
+        console.log("失败");
+        return;
+    }
+    clickItemInCenter(join);
+    sleep(4000);
+    join = textContains("授权").findOnce();
+
+    if (join) {
+        back();
     }
 }
 
@@ -202,40 +242,44 @@ function timeCountDown() {
     toastLog("请等待");
     let countDown;
     let finish;
-    let beginTime = 20;
-    let countDownTime = 40;
+    let beginTime = 10;
+    let countDownTime = 20;
     let m = beginTime;
 
     for (let i = 0; i < m; i++) {
-        sleep(250);
+        sleep(500);
 
         // 这个是检查是否有 倒计时 0-8 秒的数字存在，格式为 1，1s，01，01s，1S，01S。
-        for (let j = 0; j <= 8; j++) {
-            countDown = text(String(j)).findOnce();
-            if (countDown == null) {
-                countDown = text("0" + String(j)).findOnce();
-            }
-            if (countDown == null) {
-                countDown = text(String(j) + "S").findOnce();
-            }
-            if (countDown == null) {
-                countDown = text("0" + String(j) + "S").findOnce();
-            }
-            if (countDown == null) {
-                countDown = text(String(j) + "s").findOnce();
-            }
-            if (countDown == null) {
-                countDown = text("0" + String(j) + "s").findOnce();
-            }
-
-
-            if (countDown && countDown.bounds().left <= deviceWidth * 0.2) {
-                if (m === beginTime) {
-                    console.log("开始倒计时...");
-                    m = countDownTime;
-                    i = 0;
+        if (m !== countDownTime) {
+            let allTexts = find();
+            for (let j = 0; j < allTexts.length; j++) {
+                let item = allTexts[j];
+                let text = item.text();
+                if (text != null && text !== "") {
+                    for (let k = 1; k <= 8; k++) {
+                        if (text === (String(k)) ||
+                            text === ("0" + String(k)) ||
+                            text === (String(k) + "S") ||
+                            text === ("0" + String(k) + "S") ||
+                            text === (String(k) + "s") ||
+                            text === ("0" + String(k)) ||
+                            text === ("0" + String(k) + "s")) {
+                            countDown = item;
+                            if (countDown && countDown.bounds().left <= deviceWidth * 0.2) {
+                                if (m === beginTime) {
+                                    console.log("开始倒计时...");
+                                    m = countDownTime;
+                                    i = 0;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    if (m === countDownTime) {
+                        break;
+                    }
                 }
-                break;
+
             }
         }
 
@@ -310,8 +354,7 @@ function run1() {
     return 0;
 }
 
-function run(f) {
-    flag = f;
+function run() {
     let m = run1();
     if (m === -1) {
         alert("结束（异常）");
@@ -388,6 +431,10 @@ function exclude(items, excludes) {
     return res;
 }
 
+function runVip() {
+    vipFlag = true;
+    run();
+}
+
 // run();
-// browseProducts();
-module.exports = [run, getMoney];
+module.exports = [run, getMoney, runVip];
