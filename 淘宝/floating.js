@@ -1,5 +1,6 @@
 toastLog("请在无障碍中选择本 APP");
 auto.waitFor();
+toastLog("请查看本悬浮窗的“说明”！！")
 let option = 0;
 
 let window = floaty.window(
@@ -99,7 +100,7 @@ window.setting.click(() => {
 let th = null;
 let script = null;
 window.start.click(() => {
-    let ss = "/sdcard/脚本/Internet/淘宝京东/淘宝/script.js";
+    let ss = "/sdcard/脚本/Internet/淘宝京东/淘宝/script1.js";
     if (script == null) {
         script = require(ss);
     }
@@ -126,7 +127,7 @@ window.start.click(() => {
 });
 
 window.about.click(() => {
-    dialogs.alert("该脚本为双11/12时期的脚本，暂未进行改动");
+    dialogs.alert("更新适配2020双十一活动。注意！！！使用该脚本可能导致收益减少！请关注每次获得币的数量");
 });
 
 window.stop.click(() => {
